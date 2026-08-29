@@ -10,25 +10,38 @@
 
 import { useEffect, useState } from 'react'
 
-// El repo se movio de logspace-ai a langflow-ai y las dos rutas
-// circulan en la documentacion. Se prueban en orden hasta que
-// una cargue, asi no importa cual siga viva.
+// Orden confirmado en consola: logspace-ai@main devuelve 403,
+// langflow-ai@main carga bien. Se prueban en orden por si el
+// CDN cambia mas adelante.
 const SCRIPT_SOURCES = [
-  'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@main/dist/build/static/js/bundle.min.js',
   'https://cdn.jsdelivr.net/gh/langflow-ai/langflow-embedded-chat@main/dist/build/static/js/bundle.min.js',
   'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js',
+  'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@main/dist/build/static/js/bundle.min.js',
 ]
 
-// El tunel de Cloudflare cambia de URL cada vez que se reinicia.
-// Leerla de una variable de entorno permite actualizarla en
-// Vercel sin tocar el codigo ni volver a desplegar a mano.
-const DEFAULT_HOST =
+// -------------------------------------------------------------
+// Configuracion
+//
+// Los tres valores salen de variables de entorno. Los literales
+// de abajo son solo el respaldo si la variable no esta definida.
+//
+// En .env.local (y en Vercel > Settings > Environment Variables):
+//   NEXT_PUBLIC_LANGFLOW_HOST=https://...trycloudflare.com
+//   NEXT_PUBLIC_LANGFLOW_FLOW_ID=eee75542-...
+//   NEXT_PUBLIC_LANGFLOW_API_KEY=sk-...
+//
+// El tunel de Cloudflare cambia de URL en cada reinicio, asi que
+// tenerla en una variable evita editar codigo cada vez.
+// -------------------------------------------------------------
+const HOST_URL =
   process.env.NEXT_PUBLIC_LANGFLOW_HOST ??
   'https://rescue-adipex-cash-probe.trycloudflare.com'
 
-const DEFAULT_FLOW =
+const FLOW_ID =
   process.env.NEXT_PUBLIC_LANGFLOW_FLOW_ID ??
   'eee75542-fc3b-4887-99b9-eece248ecc9d'
+
+const API_KEY = process.env.NEXT_PUBLIC_LANGFLOW_API_KEY ?? 'sk-4mCMt3-IPtN1l1tOjepcHvrzmqxVeZnKxEOKqwGL6PQ'
 
 // El elemento no es JSX estandar, asi que lo tipamos localmente.
 // Evita tocar el namespace global de JSX, que cambio de lugar en
@@ -59,12 +72,14 @@ function loadScript(src: string): Promise<boolean> {
 }
 
 export default function AgroBot({
-  flowId = DEFAULT_FLOW,
-  hostUrl = DEFAULT_HOST,
+  flowId = FLOW_ID,
+  hostUrl = HOST_URL,
+  apiKey = API_KEY,
   title = 'AgroBot STEAM',
 }: {
   flowId?: string
   hostUrl?: string
+  apiKey?: string
   title?: string
 }) {
   const [ready, setReady] = useState(false)
@@ -74,13 +89,13 @@ export default function AgroBot({
     let cancelled = false
 
     async function init() {
-      // Si ya esta definido (por ejemplo tras un remontaje), listo.
+      // Ya definido (por ejemplo tras un remontaje).
       if (customElements.get('langflow-chat')) {
         if (!cancelled) setReady(true)
         return
       }
 
-      // Si el script ya se inyecto antes, solo esperar.
+      // El script ya se inyecto antes: solo esperar.
       if (document.querySelector('script[data-langflow-embed]')) {
         await customElements.whenDefined('langflow-chat')
         if (!cancelled) setReady(true)
@@ -110,6 +125,16 @@ export default function AgroBot({
     }
   }, [])
 
+  // Aviso en desarrollo si la clave nunca se configuro.
+  useEffect(() => {
+    if (apiKey === 'sk-4mCMt3-IPtN1l1tOjepcHvrzmqxVeZnKxEOKqwGL6PQ') {
+      console.warn(
+        '[AgroBot] NEXT_PUBLIC_LANGFLOW_API_KEY no esta definida. ' +
+          'Si Langflow exige autenticacion, las peticiones daran 403.'
+      )
+    }
+  }, [apiKey])
+
   if (failed) {
     return (
       <div className="rounded-xl border border-neutral-200 bg-white p-5">
@@ -138,6 +163,7 @@ export default function AgroBot({
       host_url={hostUrl}
       window_title={title}
       chat_position="bottom-right"
+      api_key={apiKey}
     />
   )
 }
