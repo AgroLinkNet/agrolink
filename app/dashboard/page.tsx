@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import HeatMap, { type NodeReading } from '@/components/HeatMap'
+import AgroBot from '@/components/AgroBot'
 
 type Farm = { id: string; name: string }
 type Layout = 'stacked' | 'side'
@@ -211,7 +212,7 @@ function NodeDetail({
 
   const lvl = rowLevel(node)
   const recs = recommendations(node)
-
+  
   const metrics: [string, string, Level][] = [
     [
       'Humedad del suelo',
@@ -298,7 +299,6 @@ function NodeDetail({
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
           Recomendaciones
         </p>
-
         {recs.length === 0 ? (
           <p className="text-sm text-neutral-600">
             Todos los valores están dentro del rango objetivo. No se requiere
@@ -324,6 +324,8 @@ function NodeDetail({
             ))}
           </div>
         )}
+                <AgroBot /> 
+
       </div>
 
       <p className="mt-4 text-xs text-neutral-400">
@@ -336,6 +338,11 @@ function NodeDetail({
 // =============================================================
 // Page
 // =============================================================
+
+<script src="https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@main/dist/build/static/js/bundle.min.js"></script>
+
+
+
 export default function DashboardPage() {
   const [email, setEmail] = useState('')
   const [farms, setFarms] = useState<Farm[]>([])
