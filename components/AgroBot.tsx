@@ -5,13 +5,12 @@
 // Un web component no existe hasta que su script lo define. Por
 // eso el snippet suelto no renderiza nada: falta cargar el
 // bundle desde el CDN primero.
-
 'use client'
 
 import { useEffect, useState } from 'react'
 
 const SCRIPT_SRC =
-  'https://cdn.jsdelivr.net/gh/langflow-ai/langflow-embedded-chat@main/dist/build/static/js/bundle.min.js'
+  'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@main/dist/build/static/js/bundle.min.js'
 
 // El elemento no es JSX estándar, así que lo tipamos a mano.
 // Evita declarar cosas en el namespace global de JSX, que en
@@ -27,7 +26,7 @@ const LangflowChat = 'langflow-chat' as unknown as React.FC<{
 
 export default function AgroBot({
   flowId = 'eee75542-fc3b-4887-99b9-eece248ecc9d',
-  hostUrl = 'https://yearbook-pedometer-palm.ngrok-free.dev',
+  hostUrl = 'https://route-received-envelope-mph.trycloudflare.com',
   title = 'AgroBot STEAM',
 }: {
   flowId?: string
