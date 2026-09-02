@@ -324,7 +324,7 @@ function NodeDetail({
             ))}
           </div>
         )}
-
+            <AgroBot />
 
       </div>
 
